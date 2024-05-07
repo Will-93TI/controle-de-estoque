@@ -1,0 +1,8 @@
+<form method="post">
+    {% csrf_token %}
+    <label for="product_id">Product ID:</label>
+    <input type="text" name="product_id">
+    <label for="quantity">Quantity:</label>
+    <input type="text" name="quantity">
+    <button type="submit">Submit</button>
+</form>
