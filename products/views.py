@@ -39,7 +39,9 @@ def product_create(request):
 def product_output(request):
     if request.method == 'POST':
         product_id = request.POST.get('product_id')
-        quantity = request.POST.get('quantity')
+        quantity = request.POST.get('Quantidade')
+        expiration_date = request.POST.get('Validade')
+
         
         # Verifica se a quantidade é válida
         if quantity.isdigit() and int(quantity) > 0:
@@ -47,7 +49,7 @@ def product_output(request):
             product.quantity -= int(quantity)
             product.save()
             # Redireciona para uma página de sucesso ou para a página inicial
-            return redirect('home')
+            return redirect('stock_report')
         else:
             # Retorne um erro ou mensagem de validação na mesma página
             pass
