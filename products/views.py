@@ -25,40 +25,62 @@ def menu(request):
 
 def product_create(request):
     if request.method == 'POST':
-        form = ProductForm(request.POST)
-        if form.is_valid():
-            product = form.save(commit=False)
-            product.user = request.user
-            product.save()
-            return redirect('menu')
+        name = request.POST.get('name')
+        quantity = int(request.POST.get('quantity'))
+        expiration_date = request.POST.get('expiration_date')
+
+        # Verifica se já existe um produto com o mesmo nome e validade
+        existing_product = Product.objects.filter(name=name, expiration_date=expiration_date).first()
+
+        if existing_product:
+            # Se o produto existir, atualize a quantidade adicionando a quantidade fornecida
+            existing_product.quantity += quantity
+            existing_product.save()
+        else:
+            # Caso contrário, crie um novo produto
+            new_product = Product.objects.create(name=name, quantity=quantity, expiration_date=expiration_date)
+
+        return redirect('menu')
     else:
-        form = ProductForm()
-    return render(request, 'product_create.html', {'form': form})
+        # Lógica para exibir o formulário de adicionar produtos
+        pass
+
+    # Renderiza o template com o formulário
+    return render(request, 'product_create.html')
+
 
 #dar saida nos produtos
+from django.shortcuts import render, redirect
+from .models import Product
+
 def product_output(request):
     if request.method == 'POST':
         product_id = request.POST.get('product_id')
-        quantity = request.POST.get('Quantidade')
-        expiration_date = request.POST.get('Validade')
+        quantity = request.POST.get('quantity')
 
-        
-        # Verifica se a quantidade é válida
-        if quantity.isdigit() and int(quantity) > 0:
-            product = Product.objects.get(pk=product_id)
+        # Obtém o produto ordenado por data de expiração em ordem decrescente
+        product = Product.objects.filter(pk=product_id).order_by('-expiration_date').first()
+
+        if product:
+            # Deduz a quantidade do produto
             product.quantity -= int(quantity)
-            product.save()
-            # Redireciona para uma página de sucesso ou para a página inicial
-            return redirect('stock_report')
-        else:
-            # Retorne um erro ou mensagem de validação na mesma página
-            pass
+
+            # Verifique se a quantidade é menor ou igual a zero
+            if product.quantity <= 0:
+                # Se a quantidade for menor ou igual a zero, exclua o produto
+                product.delete()
+            else:
+                # Caso contrário, salve as alterações no produto
+                product.save()
+
+        return redirect('stock_report')
     else:
         # Lógica para exibir o formulário de saída de produtos
         pass
 
     # Renderiza o template com o formulário
     return render(request, 'product_output.html')
+
 
 #relatorio do que tem em estoque
 def stock_report(request):
