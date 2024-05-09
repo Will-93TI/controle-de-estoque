@@ -1,8 +1,9 @@
 <form method="post">
     {% csrf_token %}
-    <label for="product_id">Id do produto:</label>
+    <label for="product_id">Lote do produto:</label>
     <input type="text" name="product_id">
-    <label for="quantity">Quantidade:</label>
+
+    <br><label for="quantity">Quantidade:</label></br>
     <input type="text" name="quantity">
-    <button type="submit">Confirmar</button>
+    <br><button type="submit">Confirmar</button></br>
 </form>
