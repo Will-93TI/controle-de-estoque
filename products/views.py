@@ -4,6 +4,7 @@ from django.contrib.auth import login, logout
 from django.shortcuts import render, redirect
 from .forms import ProductForm
 from .models import Product
+from django.http import JsonResponse
 
 def login_view(request):
     if request.method == 'POST':
@@ -25,28 +26,15 @@ def menu(request):
 
 def product_create(request):
     if request.method == 'POST':
-        name = request.POST.get('name')
-        quantity = int(request.POST.get('quantity'))
-        expiration_date = request.POST.get('expiration_date')
-
-        # Verifica se já existe um produto com o mesmo nome e validade
-        existing_product = Product.objects.filter(name=name, expiration_date=expiration_date).first()
-
-        if existing_product:
-            # Se o produto existir, atualize a quantidade adicionando a quantidade fornecida
-            existing_product.quantity += quantity
-            existing_product.save()
-        else:
-            # Caso contrário, crie um novo produto
-            new_product = Product.objects.create(name=name, quantity=quantity, expiration_date=expiration_date)
-
-        return redirect('menu')
+        form = ProductForm(request.POST)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.user = request.user
+            product.save()
+            return redirect('stock_report')
     else:
-        # Lógica para exibir o formulário de adicionar produtos
-        pass
-
-    # Renderiza o template com o formulário
-    return render(request, 'product_create.html')
+        form = ProductForm()
+    return render(request, 'product_create.html', {'form': form})
 
 
 #dar saida nos produtos
@@ -88,3 +76,4 @@ def stock_report(request):
     # Lógica para gerar o relatório (por exemplo, somar todas as quantidades)
     total_stock = sum(product.quantity for product in products)
     return render(request, 'stock_report.html', {'products': products, 'total_stock': total_stock})
+
